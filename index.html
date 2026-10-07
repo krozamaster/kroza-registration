@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Registration Portal</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;color:#202124}
+.wrap{max-width:760px;margin:35px auto;padding:18px}.card{background:#fff;border-radius:14px;padding:30px;box-shadow:0 8px 30px #00000012}
+h1{margin:0 0 8px;font-size:28px}p{color:#666}.field{margin:20px 0}.field label{display:block;font-weight:600;margin-bottom:8px}.field input,.field select,.field textarea{width:100%;padding:13px;border:1px solid #d8dce5;border-radius:8px;font-size:15px;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:#5b67f1}.required{color:#e53935}button{border:0;border-radius:8px;padding:13px 20px;font-weight:700;cursor:pointer}.submit{width:100%;background:#4f46e5;color:white;font-size:16px}.hidden{display:none}.success{text-align:center;padding:45px 15px}.success .icon{font-size:55px}.success h2{margin:10px 0}.admin-link{display:block;text-align:center;margin-top:15px;color:#666;text-decoration:none;font-size:13px}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}th,td{border:1px solid #e1e4ea;padding:10px;text-align:left;vertical-align:top}th{background:#f1f3f7}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.toolbar button{background:#111827;color:white}.toolbar .danger{background:#dc2626}.toolbar input{flex:1;min-width:200px;padding:11px;border:1px solid #ddd;border-radius:8px}.small{font-size:12px;color:#777}
+@media(max-width:600px){.card{padding:20px}.wrap{margin:10px auto}table{display:block;overflow:auto;white-space:nowrap}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="formPage" class="card">
+<h1>Registration Form</h1>
+<p>Please complete each step to finish your registration.</p>
+
+<form id="registrationForm">
+<div id="step1">
+<div class="field"><label>Full Name <span class="required">*</span></label><input id="name" required></div>
+<div class="field"><label>Email Address <span class="required">*</span></label><input id="email" type="email" required></div>
+<div class="field"><label>Phone Number <span class="required">*</span></label><input id="phone" required></div>
+<div class="field"><label>Age</label><input id="age" type="number" min="1" max="100"></div>
+<div class="field"><label>Gender</label><select id="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+<div class="field"><label>Facebook / Social Profile</label><input id="social"></div>
+<div class="field"><label>Why are you interested?</label><textarea id="reason" rows="4"></textarea></div>
+<button class="submit" type="button" onclick="nextStep()">Next Step</button>
+</div>
+
+<div id="step2" class="hidden">
+<h2>PC Configuration</h2>
+<p>Please provide your PC specifications.</p>
+
+<div class="field"><label>CPU <span class="required">*</span></label><input id="cpu" required></div>
+<div class="field"><label>RAM <span class="required">*</span></label><input id="ram" placeholder="Example: 16 GB" required></div>
+<div class="field"><label>Type of RAM <span class="required">*</span></label><select id="ramType" required><option value="">Select</option><option>DDR3</option><option>DDR4</option><option>DDR5</option><option>Other</option></select></div>
+<div class="field"><label>GPU <span class="required">*</span></label><input id="gpu" required></div>
+
+
+
+<div class="field"><label>Testing / Play Time <span class="required">*</span></label>
+<select id="playTime" required>
+<option value="">Select</option>
+<option>5 Hours</option><option>6 Hours</option><option>7 Hours</option>
+<option>8 Hours</option><option>9 Hours</option><option>10 Hours</option>
+<option>12 Hours</option><option>Over 12 Hours</option>
+</select></div>
+
+<div class="field">
+<label>Do your PC support 1080p? <span class="required">*</span></label>
+<select id="support1080p" required>
+<option value="">Select</option><option>Yes</option><option>No</option>
+</select>
+</div>
+
+<button class="submit" type="submit">Submit Registration</button>
+</div>
+</form>
+
+<a class="admin-link" href="#" onclick="openAdmin();return false">Admin Panel</a>
+</section>
+
+<section id="successPage" class="card success hidden">
+<div class="icon">✓</div>
+<h2>Registration Completed</h2>
+<p>Your registration has been submitted successfully.</p>
+<p class="small">You cannot submit another registration from this browser.</p>
+</section>
+
+
+<section id="adminLoginPage" class="card hidden">
+<div style="text-align:center;margin-bottom:24px">
+<h1 style="font-size:22px;margin-bottom:8px">this admin pannal is loyal for kroza</h1>
+<p>Admin Login</p>
+</div>
+<div class="field">
+<label>Username</label>
+<input id="adminUsername" type="text" autocomplete="username" placeholder="Enter username">
+</div>
+<div class="field">
+<label>Password</label>
+<input id="adminPassword" type="password" autocomplete="current-password" placeholder="Enter password">
+</div>
+<button class="submit" type="button" onclick="adminLogin()">Login</button>
+<button type="button" onclick="closeAdminLogin()" style="width:100%;margin-top:10px;background:#e5e7eb;color:#111827">Back</button>
+</section>
+
+<section id="adminPage" class="card hidden">
+<h1>Admin Panel</h1>
+<p>All registrations saved on this browser are shown below.</p>
+<div class="toolbar">
+<input id="search" placeholder="Search name, email, phone..." oninput="render()">
+<button onclick="downloadCSV()">Export CSV</button>
+<button class="danger" onclick="clearAll()">Delete All</button>
+<button onclick="closeAdmin()">Back</button>
+</div>
+<div id="tableBox"></div>
+</section>
+
+</div>
+
+<script>
+const KEY="registration_records_v1", DONE="registration_done_v1";
+
+function getRecords(){return JSON.parse(localStorage.getItem(KEY)||"[]")}
+function saveRecords(x){localStorage.setItem(KEY,JSON.stringify(x))}
+
+document.getElementById("registrationForm").addEventListener("submit",function(e){
+ e.preventDefault();
+ if(localStorage.getItem(DONE)){showSuccess();return}
+ const record={
+  id:Date.now(),
+  serial:getRecords().length+1,
+  name:val("name"),email:val("email"),phone:val("phone"),
+  age:val("age"),gender:val("gender"),social:val("social"),
+  reason:val("reason"),cpu:val("cpu"),ram:val("ram"),
+  ramType:val("ramType"),gpu:val("gpu"),
+  playTime:val("playTime"),support1080p:val("support1080p"),
+  submittedAt:new Date().toLocaleString()
+ };
+ const records=getRecords();
+ records.push(record);saveRecords(records);
+ localStorage.setItem(DONE,"1");showSuccess();
+});
+
+function nextStep(){
+  const form=document.getElementById("registrationForm");
+  const step1=document.getElementById("step1");
+  const required=step1.querySelectorAll("[required]");
+  for(const el of required){
+    if(!el.value.trim()){el.reportValidity();return}
+  }
+  step1.classList.add("hidden");
+  document.getElementById("step2").classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function val(id){return document.getElementById(id).value.trim()}
+function showSuccess(){document.getElementById("formPage").classList.add("hidden");document.getElementById("adminPage").classList.add("hidden");document.getElementById("successPage").classList.remove("hidden")}
+function openAdmin(){
+ document.getElementById("formPage").classList.add("hidden");
+ document.getElementById("successPage").classList.add("hidden");
+ document.getElementById("adminPage").classList.add("hidden");
+ document.getElementById("adminLoginPage").classList.remove("hidden");
+ document.getElementById("adminUsername").value="";
+ document.getElementById("adminPassword").value="";
+ setTimeout(()=>document.getElementById("adminUsername").focus(),50);
+}
+function adminLogin(){
+ const username=document.getElementById("adminUsername").value;
+ const password=document.getElementById("adminPassword").value;
+ if(username==="krozagamerz" && password==="kroza@123FG"){
+   document.getElementById("adminLoginPage").classList.add("hidden");
+   document.getElementById("adminPage").classList.remove("hidden");
+   render();
+ }else{
+   alert("Incorrect username or password.");
+   document.getElementById("adminPassword").value="";
+   document.getElementById("adminUsername").focus();
+ }
+}
+function closeAdminLogin(){
+ document.getElementById("adminLoginPage").classList.add("hidden");
+ document.getElementById("formPage").classList.remove("hidden");
+}
+function closeAdmin(){document.getElementById("adminPage").classList.add("hidden");document.getElementById("adminLoginPage").classList.add("hidden");document.getElementById("formPage").classList.remove("hidden")}
+function render(){
+ const q=(document.getElementById("search").value||"").toLowerCase();
+ const rows=getRecords().filter(r=>Object.values(r).join(" ").toLowerCase().includes(q));
+ if(!rows.length){document.getElementById("tableBox").innerHTML="<p>No registrations found.</p>";return}
+ let h="<table><thead><tr><th>Serial</th><th>Name</th><th>Email</th><th>Phone</th><th>Age</th><th>Gender</th><th>Social</th><th>Reason</th><th>CPU</th><th>RAM</th><th>RAM Type</th><th>GPU</th><th>Play Time</th><th>1080p Support</th><th>Submitted</th></tr></thead><tbody>";
+ rows.forEach((r,i)=>h+=`<tr><td>${esc(r.serial)}</td><td>${esc(r.name)}</td><td>${esc(r.email)}</td><td>${esc(r.phone)}</td><td>${esc(r.age)}</td><td>${esc(r.gender)}</td><td>${esc(r.social)}</td><td>${esc(r.reason)}</td><td>${esc(r.cpu)}</td><td>${esc(r.ram)}</td><td>${esc(r.ramType)}</td><td>${esc(r.gpu)}</td><td>${esc(r.playTime)}</td><td>${esc(r.support1080p)}</td><td>${esc(r.submittedAt)}</td></tr>`);
+ h+="</tbody></table>";document.getElementById("tableBox").innerHTML=h;
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function downloadCSV(){
+ const r=getRecords();if(!r.length){alert("No data to export.");return}
+ const head=["Serial","Name","Email","Phone","Age","Gender","Social","Reason","CPU","RAM","RAM Type","GPU","Play Time","1080p Support","Submitted"];
+ const csv=[head,...r.map(x=>[x.serial,x.name,x.email,x.phone,x.age,x.gender,x.social,x.reason,x.cpu,x.ram,x.ramType,x.gpu,x.playTime,x.support1080p,x.submittedAt])].map(a=>a.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download="registrations.csv";a.click();
+}
+function clearAll(){if(confirm("Delete all saved registrations?")){localStorage.removeItem(KEY);render()}}
+</script>
+</body>
+</html>
